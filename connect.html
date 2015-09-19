@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>登录妈蜜科技</title>
+	<style>
+	#qr img {display:inline!important;}
+	</style>
+</head>
+<body>
+	<p style="text-align:center;">骚等，二维码加载有点慢</p>
+	<div id="qr" style="text-align:center"></div>
+<script src="js/socket.io.min.js"></script>
+<script src="http://scdn.bozhong.com/source/common/js/jquery.min.js"></script>
+<script src="http://scdn.bozhong.com/source/common/js/qr.js?v2"></script>
+<script>
+function connect() {
+	$('#qr').empty();
+	io = io.connect('127.0.0.1:8080/wx', {
+		transports: ['websocket']
+	});
+	io.emit('wx:qrcode:give_me_code');
+	io.on('wx:qrcode:got', function(data) {
+		var url = "http://qr.liantu.com/api.php?el=m&text=" + encodeURIComponent(data);
+		new QRCode(document.getElementById('qr'),{text:data,width:300,height:300,correctLevel:QRCode.CorrectLevel.L});
+	});
+
+	io.on('wx:scan:success', function(data) {
+		console.log(data);
+		console.log('扫描成功');
+	});
+
+	io.on('wx:auth:success', function(data) {
+		console.log('登录成功', data);
+	});
+
+	io.on('wx:auth:error', function(data) {
+		console.log('登录失败', data);
+	});
+
+	io.on('wx:auth:code', function(code) {
+		console.log('获取到code', code);
+	});
+} 
+// 每1分钟刷新一次
+connect();
+</script>
+</body>
+</html>
