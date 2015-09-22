@@ -7,7 +7,7 @@ var corp = config.corp;
 var bodyParser = require('body-parser');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
-        extended: false
+	extended: false
 }));
 
 
@@ -57,11 +57,10 @@ app.post('/signin/confirm', function(req, res, next) {
 	console.log(req.body);
 	var uuid = req.body.uuid;
 	var UserId = req.body.username;
-	console.log('userid',UserId);
-	wx.to('wx:' + uuid).emit('wx:auth:identify', UserId);
+	console.log('userid', UserId);
 	wx.to('wx:' + uuid).emit('wx:auth:success', UserId);
 	API.send({
-		touser:UserId
+		touser: UserId
 	}, {
 		"msgtype": "text",
 		"text": {
@@ -83,6 +82,7 @@ app.get('/oauth/wechat/checkcode', function(req, res, next) {
 	API.getUserIdByCode(code, function(err, user) {
 		if (user.UserId) {
 			// 显示确认登录页面
+			wx.to('wx:' + uuid).emit('wx:auth:identify', user.UserId);
 			res.send(fs.readFileSync('./confirm.html').toString()
 				.replace('${uuid}', uuid).replace(
 					'${username}', user.UserId).toString());
