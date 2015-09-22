@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>确认登录妈蜜科技</title>
+	<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport" />
+	<style>
+	* {
+		margin:0;
+		padding:0;
+	}
+	#box {
+		position:absolute;
+		top:50%;
+		left:50%;
+		-webkit-transform:translate(-50%,-50%);
+	}
+	p {
+		line-height:25px;
+	}
+  .confirm {
+    display:inline-block;
+    width:90%;
+    background-color:green;
+    color:#fff;
+    border-radius:3px;
+    padding:6px;
+    text-decoration:none;
+    margin-top:20px;
+  }
+	</style>
+</head>
+<body>
+	<div style="text-align:center;" id="box">
+		<img src="http://127.0.0.1:8080/img/desktop.png" alt="">
+		<p>确认使用微信登录妈蜜采集系统？</p>
+    <p>
+      <a href="#" class="confirm">确认登录</a>
+    </p>
+	</div>
+  <script src="http://scdn.bozhong.com/source/common/js/jquery.min.js"></script>
+  <script type="text/javascript">
+    $(function(){
+      $('.confirm').click(function(e){
+        e.preventDefault();
+        $.post('/signin/confirm',{
+          uuid:'${uuid}',
+          username:'${username}'
+        },function(data){
+          console.log(data);
+        });
+      });
+    });
+  </script>
+</body>
+</html>
