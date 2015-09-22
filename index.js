@@ -19,15 +19,23 @@ API.getAccessToken(function(err, token) {
 
 var wx = app.io.of('wx');
 
-var redirect_uri = 'http://common.bozhong.com/cms/content.html?type=page&id=54f50c09a3c3b1c21d8b456e';
+var redirect_uri =
+	'http://common.bozhong.com/cms/content.html?type=page&id=54f50c09a3c3b1c21d8b456e';
 
 wx.on('connection', function(socket) {
 	socket.on('wx:qrcode:give_me_code', function() {
 		var uuid = require('node-uuid').v4();
 		socket.join('wx:' + uuid);
-		var codeUrl = 'http://' + config.site.domain + '/oauth/wechat/checkcode?uuid=' + uuid;
-		var url = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=' + corp.corpid + '&redirect_uri=' + encodeURIComponent('http://common.bozhong.com/cms/content.html?type=page&id=54f50c09a3c3b1c21d8b456e&redirect_uri=' + encodeURIComponent(codeUrl)) + '&response_type=' + 'code' + '&scope=' + 'snsapi_base' + '&state=' + 'hello' + '#wechat_redirect';
-		socket.emit('wx:qrcode:got', 'http://' + config.site.domain + '/oauth/wechat/redirect?uuid=' + uuid + '&url=' + encodeURIComponent(url));
+		var codeUrl = 'http://' + config.site.domain +
+			'/oauth/wechat/checkcode?uuid=' + uuid;
+		var url = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=' +
+			corp.corpid + '&redirect_uri=' + encodeURIComponent(
+				'http://common.bozhong.com/cms/content.html?type=page&id=54f50c09a3c3b1c21d8b456e&redirect_uri=' +
+				encodeURIComponent(codeUrl)) + '&response_type=' + 'code' + '&scope=' +
+			'snsapi_base' + '&state=' + 'hello' + '#wechat_redirect';
+		socket.emit('wx:qrcode:got', 'http://' + config.site.domain +
+			'/oauth/wechat/redirect?uuid=' + uuid + '&url=' + encodeURIComponent(
+				url));
 	});
 });
 
@@ -37,6 +45,26 @@ app.get('/oauth/wechat/redirect', function(req, res, next) {
 	res.redirect(req.query.url);
 });
 
+// 点击确认才登录
+app.post('/signin/confirm', function(req, res, next) {
+	var uuid = req.body.uuid;
+	var UserId = req.body.UserId;
+	res.send('登录成功啦');
+	wx.to('wx:' + uuid).emit('wx:auth:identify', user);
+	wx.to('wx:' + uuid).emit('wx:auth:success', user);
+	API.send({
+		touser: user.UserId
+	}, {
+		"msgtype": "text",
+		"text": {
+			"content": "登录提醒：您刚刚通过微信登录了妈蜜采集系统"
+		},
+		"safe": "0"
+	}, function(err, a) {
+		console.log(err, a);
+	});
+});
+
 app.get('/oauth/wechat/checkcode', function(req, res, next) {
 	var uuid = req.query.uuid;
 	var code = req.query.code;
@@ -44,22 +72,11 @@ app.get('/oauth/wechat/checkcode', function(req, res, next) {
 	wx.to('wx:' + uuid).emit('wx:auth:code', code);
 
 	API.getUserIdByCode(code, function(err, user) {
-		console.log('get user by code', code, err, user);
 		if (user.UserId) {
-			res.send('登录成功啦');
-			wx.to('wx:' + uuid).emit('wx:auth:identify', user);
-			wx.to('wx:' + uuid).emit('wx:auth:success', user);
-			API.send({
-				touser: user.UserId
-			}, {
-				"msgtype": "text",
-				"text": {
-					"content": "登录提醒：您刚刚通过微信登录了妈蜜采集系统"
-				},
-				"safe": "0"
-			}, function(err, a) {
-				console.log(err, a);
-			});
+			// 显示确认登录页面
+			res.send(fs.readFileSync('./confirm.html')
+				.replace('${uuid}', uuid).replace(
+					'${username}', user.UserId).toString());
 		} else {
 			// 没有UserId,只有OpenId
 			wx.to('wx:' + uuid).emit('wx:auth:error', {
