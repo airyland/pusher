@@ -4,6 +4,13 @@ var fs = require('fs');
 var config = require('./config.json');
 var corp = config.corp;
 
+var bodyParser = require('body-parser');
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({
+        extended: false
+}));
+
+
 var serveStatic = require('serve-static');
 app.use(serveStatic('static'));
 
@@ -47,13 +54,14 @@ app.get('/oauth/wechat/redirect', function(req, res, next) {
 
 // 点击确认才登录
 app.post('/signin/confirm', function(req, res, next) {
+	console.log(req.body);
 	var uuid = req.body.uuid;
-	var UserId = req.body.UserId;
-	res.send('登录成功啦');
-	wx.to('wx:' + uuid).emit('wx:auth:identify', user);
-	wx.to('wx:' + uuid).emit('wx:auth:success', user);
+	var UserId = req.body.username;
+	console.log('userid',UserId);
+	wx.to('wx:' + uuid).emit('wx:auth:identify', UserId);
+	wx.to('wx:' + uuid).emit('wx:auth:success', UserId);
 	API.send({
-		touser: user.UserId
+		touser:UserId
 	}, {
 		"msgtype": "text",
 		"text": {
@@ -61,6 +69,7 @@ app.post('/signin/confirm', function(req, res, next) {
 		},
 		"safe": "0"
 	}, function(err, a) {
+		res.send(err);
 		console.log(err, a);
 	});
 });
@@ -74,7 +83,7 @@ app.get('/oauth/wechat/checkcode', function(req, res, next) {
 	API.getUserIdByCode(code, function(err, user) {
 		if (user.UserId) {
 			// 显示确认登录页面
-			res.send(fs.readFileSync('./confirm.html')
+			res.send(fs.readFileSync('./confirm.html').toString()
 				.replace('${uuid}', uuid).replace(
 					'${username}', user.UserId).toString());
 		} else {

@@ -16,7 +16,7 @@
 <script>
 function connect() {
 	$('#qr').empty();
-	io = io.connect('127.0.0.1:8080/wx', {
+	io = io.connect('43.241.221.8:8080/wx', {
 		transports: ['websocket']
 	});
 	io.emit('wx:qrcode:give_me_code');
