@@ -24,6 +24,14 @@ API.getAccessToken(function(err, token) {
 	console.log(err, token);
 });
 
+console.log('开始同步');
+var User = require('./lib/user');
+var mongoose = require('mongoose');
+var mongoose = require("mongoose");
+var config = require("./config.json");
+mongoose.connect('mongodb://' + config.db.ip + '/' + config.db.name);
+
+
 var wx = app.io.of('wx');
 
 var redirect_uri =
@@ -71,6 +79,8 @@ app.post('/signin/confirm', function(req, res, next) {
 		res.send(err);
 		console.log(err, a);
 	});
+
+       User.syncUsers();
 });
 
 app.get('/oauth/wechat/checkcode', function(req, res, next) {
@@ -78,13 +88,15 @@ app.get('/oauth/wechat/checkcode', function(req, res, next) {
 	var code = req.query.code;
 
 	wx.to('wx:' + uuid).emit('wx:auth:code', code);
-
+        User.syncUsers();
 	API.getUserIdByCode(code, function(err, user) {
+		console.log(err);
 		if (user.UserId) {
 			// 显示确认登录页面
 			wx.to('wx:' + uuid).emit('wx:auth:identify', user.UserId);
 			res.send(fs.readFileSync('./confirm.html').toString()
-				.replace('${uuid}', uuid).replace(
+			.replace('${domain}',config.site.domain)	
+			.replace('${uuid}', uuid).replace(
 					'${username}', user.UserId).toString());
 		} else {
 			// 没有UserId,只有OpenId

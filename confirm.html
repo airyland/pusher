@@ -32,9 +32,9 @@
 </head>
 <body>
 	<div style="text-align:center;" id="box">
-		<img src="http://127.0.0.1:8080/img/desktop.png" alt="">
-		<p>确认使用微信登录妈蜜采集系统？</p>
-    <p>
+		<img src="http://${domain}/img/desktop.png" alt="">
+		<p class＝"tip">确认使用微信登录妈蜜采集系统？</p>
+    <p class="login">
       <a href="#" class="confirm">确认登录</a>
     </p>
 	</div>
@@ -48,6 +48,9 @@
           username:'${username}'
         },function(data){
           console.log(data);
+	$('p').text('登录成功，请关闭页面');
+	$('.login').hide();
+	$('.confirm').hide();
         });
       });
     });

@@ -5,6 +5,9 @@
     "express.oi": "0.0.13",
     "node-uuid": "^1.4.3",
     "serve-static": "^1.10.0",
-    "wechat-enterprise-api": "0.0.7"
+    "wechat-enterprise-api": "0.0.7",
+    "x-wechat-enterprise-api": "0.0.10",
+    "mongoose": "~4.1.8",
+    "restler": "~3.3.0"
   }
 }

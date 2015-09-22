@@ -8,7 +8,7 @@
 	</style>
 </head>
 <body>
-	<p style="text-align:center;">骚等，二维码加载有点慢</p>
+	<p style="text-align:center;" id="loading">骚等，二维码加载有点慢</p>
 	<div id="qr" style="text-align:center"></div>
 <script src="js/socket.io.min.js"></script>
 <script src="http://scdn.bozhong.com/source/common/js/jquery.min.js"></script>
@@ -23,15 +23,20 @@ function connect() {
 	io.on('wx:qrcode:got', function(data) {
 		var url = "http://qr.liantu.com/api.php?el=m&text=" + encodeURIComponent(data);
 		new QRCode(document.getElementById('qr'),{text:data,width:300,height:300,correctLevel:QRCode.CorrectLevel.L});
-	});
+	$('#loading').hide();	
+});
 
 	io.on('wx:scan:success', function(data) {
 		console.log(data);
 		console.log('扫描成功');
 	});
 
+	io.on('wx:auth:identify',function(user){
+		$('#loading').text('Hi, '+user+',请在手机上确认登录').show();
+	});
 	io.on('wx:auth:success', function(data) {
 		console.log('登录成功', data);
+		location.href='https://x-mome.mao.li/index.html#/mome/collector/home';
 	});
 
 	io.on('wx:auth:error', function(data) {
