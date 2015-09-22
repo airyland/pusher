@@ -66,7 +66,15 @@ app.post('/signin/confirm', function(req, res, next) {
 	var uuid = req.body.uuid;
 	var UserId = req.body.username;
 	console.log('userid', UserId);
-	wx.to('wx:' + uuid).emit('wx:auth:success', UserId);
+	User.findOne({
+		userid: UserId
+	}, function(err, doc) {
+		wx.to('wx:' + uuid).emit('wx:auth:success', {
+			userid: UserId,
+			uid: doc.uid
+		});
+	});
+
 	API.send({
 		touser: UserId
 	}, {
@@ -80,7 +88,7 @@ app.post('/signin/confirm', function(req, res, next) {
 		console.log(err, a);
 	});
 
-       User.syncUsers();
+	User.syncUsers();
 });
 
 app.get('/oauth/wechat/checkcode', function(req, res, next) {
@@ -88,15 +96,15 @@ app.get('/oauth/wechat/checkcode', function(req, res, next) {
 	var code = req.query.code;
 
 	wx.to('wx:' + uuid).emit('wx:auth:code', code);
-        User.syncUsers();
+	User.syncUsers();
 	API.getUserIdByCode(code, function(err, user) {
 		console.log(err);
 		if (user.UserId) {
 			// 显示确认登录页面
 			wx.to('wx:' + uuid).emit('wx:auth:identify', user.UserId);
 			res.send(fs.readFileSync('./confirm.html').toString()
-			.replace('${domain}',config.site.domain)	
-			.replace('${uuid}', uuid).replace(
+				.replace('${domain}', config.site.domain)
+				.replace('${uuid}', uuid).replace(
 					'${username}', user.UserId).toString());
 		} else {
 			// 没有UserId,只有OpenId
